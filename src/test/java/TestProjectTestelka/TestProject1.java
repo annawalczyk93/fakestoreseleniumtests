@@ -203,16 +203,62 @@ public class TestProject1 {
         showCart.click();
 
         driver.navigate().to("https://fakestore.testelka.pl/zamowienie");
-        WebElement errorMessage = driver.findElement(By.cssSelector("[class*='stripe-error']"));
-        //Assertions.assertEquals(errorMessage, errorMessage.getAttribute("class"));
+
+
+        By loadingIcon = By.cssSelector(".blockOverlay");
+
+        if(driver.findElements(loadingIcon).size() > 0) {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(loadingIcon));
+        }
+
+        //przełączenie się na ramkę
+        driver.switchTo().defaultContent();
+        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.cssSelector("[name='__privateStripeFrame8']")));
+        WebElement cardNumberInput = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div>span>input:first-of-type")));
+
+       // WebElement cardNumberInput = driver.findElement(By.cssSelector("div>span>input:first-of-type"));
+       // centerWindowOnElement(cardNumberInput);
+        cardNumberInput.sendKeys("6565 7656 4564 6546");
+
+        driver.switchTo().defaultContent();
+        By errorMessageLocator = By.cssSelector("[class*='stripe-error']>li");
+        wait.until(ExpectedConditions.presenceOfElementLocated(errorMessageLocator));
+
+        WebElement errorMessage = driver.findElement(errorMessageLocator);
         Assertions.assertEquals("Numer karty nie jest prawidłowym numerem karty kredytowej.", errorMessage.getText());
     }
 
     @Test
     public void loggIntoAccount() {
         //użytkownik ma możliwość zalogowania się na stronie płatności i dokonać płatności jako zalogowany użytkownik
+        driver.navigate().to("https://fakestore.testelka.pl/zamowienie/");
+        WebElement showLogin = driver.findElement(By.cssSelector("[class='showlogin']"));
+        showLogin.click();
 
+
+
+        zalogujSie("annawiktoriawalczyk", "password=123^&");
+
+        WebElement entryTitle = driver.findElement(By.cssSelector("h1[class='entry-title']"));
+        Assertions.assertEquals(true, entryTitle.isDisplayed());
+        Assertions.assertEquals("Moje konto", entryTitle.getText());
+        WebElement displyedUserName = driver.findElement(By.cssSelector("p>strong:nth-of-type(1)"));
+        Assertions.assertEquals("annawiktoriawalczyk", displyedUserName.getText());
     }
+    @Test
+    public void loginFailed (){
+        zalogujSie("annaw", "/password=123^&");
+    }
+
+    public void zalogujSie(String login, String password){
+        WebElement inputDoLogowania = driver.findElement(By.id("username")); //.sendKeys('annawiktoriawalczyk');
+        inputDoLogowania.sendKeys(login);
+        WebElement inputDoHasla = driver.findElement(By.id("password"));
+        inputDoHasla.sendKeys(password);
+        WebElement buttonDoLogowania = driver.findElement(By.name("login"));
+        buttonDoLogowania.click();
+    }
+
 
     @Test
     public void createAccount() {
@@ -220,20 +266,19 @@ public class TestProject1 {
     }
 
     @Test
-    public void buyWithoutCreatedAccount (){
+    public void buyWithoutCreatedAccount() {
         //użytkownik ma możliwość dokonania zakupu bez zakładania konta,
     }
 
     @Test
-    public void showOrder (){
+    public void showOrder() {
         //użytkownik, który posiada konto może zobaczyć swoje zamówienia na swoim koncie,
     }
 
     @Test
-    public void afterPlacingTheOrder(){
+    public void afterPlacingTheOrder() {
         //użytkownik po dokonaniu zamówienia może zobaczyć podsumowanie, które zawiera numer zamówienia, poprawną datę, kwotę, metodę płatności, nazwę i ilość zakupionych produktów.
     }
-
 
 
     private void centerWindowOnElement(WebElement element) {
