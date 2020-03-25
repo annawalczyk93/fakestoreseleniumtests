@@ -13,6 +13,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class TestProject1 {
@@ -33,7 +34,7 @@ public class TestProject1 {
 
     @Test //użytkownik ma możliwość dodania wybranej wycieczki do koszyka ze strony tej wycieczki,
     public void addElement() throws InterruptedException {
-        //znajduję wybraną wycieczkę
+
         WebElement chooseTrip = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a:first-of-type"));
 
         //zapisanie kwoty jaka trzeba zapłącić za wycieczkę żeby porównać później z wartością jaka będzie w koszyku
@@ -64,7 +65,6 @@ public class TestProject1 {
         Assertions.assertEquals(chosenTripPrice, spanWithPrice.getText());
     }
 
-
     @Test
     public void category() { //użytkownik ma możliwość dodania wybranej wycieczki do koszyka ze strony kategorii,
 
@@ -80,7 +80,6 @@ public class TestProject1 {
 
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("ul[class*='products']>li:first-of-type>a[class*='wc']"))).click();
 
-        //ide sobie do strony koszyka, gdzie potwierdzam .navigate().to("https://fakestore.testelka.pl/koszyk/");
         WebElement spanWithPriceWindsurfing = driver.findElement(By.cssSelector("td[class*='product-price']>span"));
         WebElement quantityInputWindsurfing = driver.findElement(By.cssSelector("td[class*='product-quantity']>div>input"));
         Assertions.assertEquals("1", quantityInputWindsurfing.getAttribute("value"));
@@ -121,7 +120,6 @@ public class TestProject1 {
         submitButton.click();
 
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("\".woocommerce-message>.button\"")));
-        //  driver.findElement(By.className("custom-logo")).click();
         driver.navigate().to("https://fakestore.testelka.pl");
 
         WebElement secondtTrip = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a:first-of-type"));
@@ -158,8 +156,6 @@ public class TestProject1 {
         wait.until(ExpectedConditions.elementToBeClickable(showCart));
         showCart.click(); //przechodzę do koszyka i zmieniam ilość wycieczek z 1 na 2
 
-        // WebElement price = driver.findElement(By.cssSelector("form[class*='woocommerce-cart-form'] table[class*='shop']>tbody td:last-of-type>span[class*='woocommerce-Price-amount']"));
-        // String test = price.getText();
         WebElement quantity = driver.findElement(By.cssSelector("[class='input-text qty text']"));
         quantity.clear();
         quantity.sendKeys("2"); //zmieniam ilość z 1 na 2
@@ -190,10 +186,9 @@ public class TestProject1 {
     }
 
     @Test
-    public void errorMessage() {
-        //użytkownik jest informowany o błędach w formularzu na stronie płatności poprzez odpowiednie komunikaty,
+    public void userIsInformedAboutErrorsInFormOnThePaymentPageThroughAppropriateMessages() {
         //dodaje wycieczkę, przechodzę do koszyka, z koszyka do zamowienia lub nawiguję bezpośrednio do zamowienia,
-        // wypełniam dane, czekam nakomunikat z błędem, lokalizuje go, potwierdzam
+        // wypełniam dane, czekam na komunikat z błędem, lokalizuje go, potwierdzam
 
         WebElement addTrip = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a:last-of-type"));
         centerWindowOnElement(addTrip);
@@ -204,20 +199,16 @@ public class TestProject1 {
 
         driver.navigate().to("https://fakestore.testelka.pl/zamowienie");
 
-
         By loadingIcon = By.cssSelector(".blockOverlay");
 
-        if(driver.findElements(loadingIcon).size() > 0) {
+        if (driver.findElements(loadingIcon).size() > 0) {
             wait.until(ExpectedConditions.invisibilityOfElementLocated(loadingIcon));
         }
-
         //przełączenie się na ramkę
         driver.switchTo().defaultContent();
         wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.cssSelector("[name='__privateStripeFrame8']")));
         WebElement cardNumberInput = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div>span>input:first-of-type")));
 
-       // WebElement cardNumberInput = driver.findElement(By.cssSelector("div>span>input:first-of-type"));
-       // centerWindowOnElement(cardNumberInput);
         cardNumberInput.sendKeys("6565 7656 4564 6546");
 
         driver.switchTo().defaultContent();
@@ -229,57 +220,262 @@ public class TestProject1 {
     }
 
     @Test
-    public void loggIntoAccount() {
-        //użytkownik ma możliwość zalogowania się na stronie płatności i dokonać płatności jako zalogowany użytkownik
+    public void userHasTheOptionOfLoggingIntoPaymentPageAndMakingPaymentAsLoggedInUser() {
+
+        WebElement addTrip = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a:last-of-type"));
+        centerWindowOnElement(addTrip);
+        addTrip.click();
+        WebElement showCart = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a[class*='added_to']"));
+        wait.until(ExpectedConditions.elementToBeClickable(showCart));
+        showCart.click();
+
         driver.navigate().to("https://fakestore.testelka.pl/zamowienie/");
         WebElement showLogin = driver.findElement(By.cssSelector("[class='showlogin']"));
         showLogin.click();
 
+        logInto("annawiktoriawalczyk", "password=123^&");
+        WebElement loginClick = driver.findElement(By.cssSelector("[name='login']"));
+        loginClick.click();
+        //płacę jako zalogowany uzytkownik
 
-
-        zalogujSie("annawiktoriawalczyk", "password=123^&");
-
-        WebElement entryTitle = driver.findElement(By.cssSelector("h1[class='entry-title']"));
-        Assertions.assertEquals(true, entryTitle.isDisplayed());
-        Assertions.assertEquals("Moje konto", entryTitle.getText());
-        WebElement displyedUserName = driver.findElement(By.cssSelector("p>strong:nth-of-type(1)"));
-        Assertions.assertEquals("annawiktoriawalczyk", displyedUserName.getText());
-    }
-    @Test
-    public void loginFailed (){
-        zalogujSie("annaw", "/password=123^&");
+        //asercja
     }
 
-    public void zalogujSie(String login, String password){
-        WebElement inputDoLogowania = driver.findElement(By.id("username")); //.sendKeys('annawiktoriawalczyk');
-        inputDoLogowania.sendKeys(login);
-        WebElement inputDoHasla = driver.findElement(By.id("password"));
-        inputDoHasla.sendKeys(password);
-        WebElement buttonDoLogowania = driver.findElement(By.name("login"));
-        buttonDoLogowania.click();
-    }
+    //metoda żeby się zalogować na stronę, tj wprowadzić dane do logowania
+    private void logInto(String login, String password) {
 
-
-    @Test
-    public void createAccount() {
-        //użytkownik ma możliwość założenia konta na stronie płatności i dokonać jednocześnie płatności,
+        WebElement inputLogIn = driver.findElement(By.id("username"));
+        inputLogIn.sendKeys(login);
+        WebElement inputPassword = driver.findElement(By.id("password"));
+        inputPassword.sendKeys(password);
+        WebElement logInButton = driver.findElement(By.name("login"));
+        logInButton.click();
     }
 
     @Test
-    public void buyWithoutCreatedAccount() {
-        //użytkownik ma możliwość dokonania zakupu bez zakładania konta,
+    public void userCanCreateAnAccountOnThePaymentPageAndMakePaymentsAtTheSameTime() throws InterruptedException {
+        //dodaj do koszyka, idz do strony zamowienia, wypelnij pola, zaznacz kilki, nr karty 4000000000003220 0225 123,
+        // potwierdz asercją z numerem zamowienia (czyli zamowienie istnieje)
+
+        WebElement addTrip = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a:last-of-type"));
+        centerWindowOnElement(addTrip);
+        addTrip.click();
+        WebElement showCart = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a[class*='added_to']"));
+        wait.until(ExpectedConditions.elementToBeClickable(showCart));
+        showCart.click();
+
+        driver.navigate().to("https://fakestore.testelka.pl/zamowienie");
+        Thread.sleep(3000);
+        fillForm();
+        fillCardDetails();
+        driver.switchTo().defaultContent();
+
+        driver.findElement(By.cssSelector("[id='createaccount']")).click();
+        fillField(By.cssSelector("[name='account_password']"), "123frytkI");
+
+        WebElement termsPoint = driver.findElement(By.cssSelector("[name='terms']"));
+        centerWindowOnElement(termsPoint);
+        termsPoint.click();
+        WebElement placeOrder = driver.findElement(By.cssSelector("[id='place_order']"));
+        placeOrder.click();
+
+        WebElement completeOrder = driver.findElement(By.cssSelector("[id='place_order']"));
+        centerWindowOnElement(completeOrder);
+        completeOrder.click();
+
+        By loadingIcon = By.cssSelector(".blockOverlay");
+
+        if (driver.findElements(loadingIcon).size() > 0) {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(loadingIcon));
+        }
+
+        WebElement orderConfirmation = driver.findElement(By.cssSelector("[class*='hankyou-order-received']"));
+        Assertions.assertTrue(orderConfirmation.isDisplayed());
+    }
+
+    private void fillForm() {
+        By nameField = By.cssSelector("[name=billing_first_name]");
+        By lastName = By.cssSelector("[name=billing_last_name]");
+        By countryDropdownList = By.cssSelector("[id='billing_country']");
+        By streetField = By.cssSelector("[name='billing_address_1']");
+        By cityField = By.cssSelector("[name='billing_city']");
+        By postCode = By.cssSelector("[name='billing_postcode']");
+        By phoneField = By.cssSelector("[name='billing_phone']");
+        By emailField = By.cssSelector("[name='billing_email']");
+        By stateDropDownList = By.cssSelector("[name='billing_state']");
+
+
+        fillField(nameField, "Darek");
+        fillField(lastName, "Glupi");
+        selectFromDropdown(countryDropdownList, "AU");
+        fillField(streetField, "Ulicowa 11");
+        fillField(cityField, "Miasto");
+        fillField(postCode, "12345");
+        fillField(phoneField, "605789123");
+        String uuid = UUID.randomUUID().toString();
+        String email = uuid + "@onet.pl";
+        fillField(emailField, email);
+        selectFromDropdown(stateDropDownList, "VIC");
+    }
+
+    private void fillField(By selector, String value) {
+        driver.findElement(selector).sendKeys(value);
+    }
+
+    private void fillCardDetails() throws InterruptedException {
+        By cardNumber = By.cssSelector("div>span>input:first-of-type");
+        By expiryDateField = By.cssSelector("[name='exp-date']");
+        By cvvField = By.cssSelector("[name='cvc']");
+
+        By cardFrameLocator = By.cssSelector("[name='__privateStripeFrame8']");
+        By expiryDateFrameLocator = By.cssSelector("[name='__privateStripeFrame9']");
+        By cvvFieldFrameLocator = By.cssSelector("[name='__privateStripeFrame10']");
+
+        fillElementInFrame(cardFrameLocator, cardNumber, "4242424242424242");
+        fillElementInFrame(expiryDateFrameLocator, expiryDateField, "223");
+        fillElementInFrame(cvvFieldFrameLocator, cvvField, "431");
+    }
+
+    private void fillElementInFrame(By frameLocator, By elementLocator, String value) throws InterruptedException {
+        driver.switchTo().defaultContent();
+        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt((frameLocator)));
+        slowType(value, elementLocator);
+    }
+
+    private void selectFromDropdown(By selector, String value) {
+        Select dropdown = new Select(driver.findElement(selector));
+        dropdown.selectByValue(value);
+    }
+
+    private void slowType(String value, By locator) throws InterruptedException {
+        WebElement element = driver.findElement(locator);
+        for (int i = 0; i < value.length(); i++) {
+            String cyfra = Character.toString(value.charAt(i));
+            element.sendKeys(cyfra);
+            //  Thread.sleep(1000);
+        }
     }
 
     @Test
-    public void showOrder() {
-        //użytkownik, który posiada konto może zobaczyć swoje zamówienia na swoim koncie,
+    public void userCanMakeAPurchaseWithoutCreatingAnAccount() throws InterruptedException {
+
+        WebElement addTrip = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a:last-of-type"));
+        centerWindowOnElement(addTrip);
+        addTrip.click();
+        WebElement showCart = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a[class*='added_to']"));
+        wait.until(ExpectedConditions.elementToBeClickable(showCart));
+        showCart.click();
+
+        driver.navigate().to("https://fakestore.testelka.pl/zamowienie");
+        Thread.sleep(3000);
+        fillForm();
+        fillCardDetails();
+        driver.switchTo().defaultContent();
+        WebElement termsPoint = driver.findElement(By.cssSelector("[name='terms']"));
+        centerWindowOnElement(termsPoint);
+        termsPoint.click();
+        WebElement placeOrder = driver.findElement(By.cssSelector("[id='place_order']"));
+        placeOrder.click();
+
+        WebElement completeOrder = driver.findElement(By.cssSelector("[id='place_order']"));
+        centerWindowOnElement(completeOrder);
+        completeOrder.click();
+
+        By loadingIcon = By.cssSelector(".blockOverlay");
+
+        if (driver.findElements(loadingIcon).size() > 0) {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(loadingIcon));
+        }
+        WebElement orderConfirmation = driver.findElement(By.cssSelector("[class*='hankyou-order-received']"));
+        Assertions.assertTrue(orderConfirmation.isDisplayed());
     }
 
     @Test
-    public void afterPlacingTheOrder() {
-        //użytkownik po dokonaniu zamówienia może zobaczyć podsumowanie, które zawiera numer zamówienia, poprawną datę, kwotę, metodę płatności, nazwę i ilość zakupionych produktów.
+    public void userWhoHasAnAccountCanViewTheirOrdersInIheirAccount() throws InterruptedException {
+
+        WebElement addTrip = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a:last-of-type"));
+        centerWindowOnElement(addTrip);
+        addTrip.click();
+        WebElement showCart = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a[class*='added_to']"));
+        wait.until(ExpectedConditions.elementToBeClickable(showCart));
+        showCart.click();
+
+        driver.navigate().to("https://fakestore.testelka.pl/zamowienie");
+        Thread.sleep(3000);
+        fillForm();
+        Thread.sleep(3000);
+        fillCardDetails();
+        driver.switchTo().defaultContent();
+
+        driver.findElement(By.cssSelector("[id='createaccount']")).click();
+        fillField(By.cssSelector("[name='account_password']"), "123frytkI");
+
+        WebElement termsPoint = driver.findElement(By.cssSelector("[name='terms']"));
+        centerWindowOnElement(termsPoint);
+        termsPoint.click();
+        WebElement placeOrder = driver.findElement(By.cssSelector("[id='place_order']"));
+        placeOrder.click();
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("[class*='hankyou-order-received']")));
+
+        driver.navigate().to("https://fakestore.testelka.pl/moje-konto/zamowienia");
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("[class='woocommerce-orders-table__row woocommerce-orders-table__row--status-processing order']")));
+        WebElement orderConfirmation = driver.findElement(By.cssSelector("[class='woocommerce-orders-table__row woocommerce-orders-table__row--status-processing order']"));
+
+        Assertions.assertTrue(orderConfirmation.isDisplayed());
     }
 
+    @Test
+    public void afterPlacingOrderUserCanSeeASummaryThatContainsPurchasedDetails() throws InterruptedException {
+
+        WebElement addTrip = driver.findElement(By.cssSelector("li[class*='pilates']:first-of-type>a:nth-of-type(2)"));
+        centerWindowOnElement(addTrip);
+
+        String tripName = driver.findElement(By.cssSelector("li[class*='pilates']:first-of-type h2")).getText();
+        String tripPrice = driver.findElement(By.cssSelector("li[class*='pilates']:first-of-type ins>span")).getText();
+        //String tripAmount = driver.findElement(By.cssSelector("[class*='storefront-recent-products']>div>ul>li[class*='first']>a>span")).getText();
+
+        addTrip.click();
+        WebElement showCart = driver.findElement(By.cssSelector("li[class*='pilates']:first-of-type>a:nth-of-type(3)"));
+        wait.until(ExpectedConditions.elementToBeClickable(showCart));
+        showCart.click();
+
+        driver.navigate().to("https://fakestore.testelka.pl/zamowienie");
+        Thread.sleep(3000);
+        String tripQuantity = driver.findElement(By.cssSelector("[class='product-quantity']")).getText();
+        Boolean paymentMethodCreditCard = driver.findElement(By.cssSelector("[id=\"payment_method_stripe\"]")).isSelected();
+
+        Thread.sleep(3000);
+        fillForm();
+        Thread.sleep(3000);
+        fillCardDetails();
+        driver.switchTo().defaultContent();
+
+        driver.findElement(By.cssSelector("[id='createaccount']")).click();
+        fillField(By.cssSelector("[name='account_password']"), "123frytkI");
+
+        WebElement termsPoint = driver.findElement(By.cssSelector("[name='terms']"));
+        centerWindowOnElement(termsPoint);
+        termsPoint.click();
+        WebElement placeOrder = driver.findElement(By.cssSelector("[id='place_order']"));
+        placeOrder.click();
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("[class*='hankyou-order-received']")));
+
+        WebElement orderNumber = driver.findElement(By.cssSelector("[class='woocommerce-order-overview__order order']"));
+        WebElement correctData = driver.findElement(By.cssSelector("[class='woocommerce-order-overview__date date']"));
+        WebElement amount = driver.findElement(By.cssSelector("[class='woocommerce-order']>ul>li[class*='total']>strong>span"));
+        WebElement paymentMethod = driver.findElement(By.cssSelector("[class='woocommerce-order-overview__payment-method method']"));
+        WebElement nameOfProduct = driver.findElement(By.cssSelector("[class='woocommerce-table__product-name product-name']>a"));
+        WebElement quantityOfProducts = driver.findElement(By.cssSelector("[class='product-quantity']"));
+
+        Assertions.assertTrue(orderNumber.isDisplayed(), "zamówienie nie ma numeru zamówienia");
+        Assertions.assertEquals(tripPrice, amount.getText());
+        Assertions.assertEquals(tripName, nameOfProduct.getText());
+       // Assertions.assertEquals(paymentMethodCreditCard, paymentMethod.isSelected());
+
+    }
 
     private void centerWindowOnElement(WebElement element) {
         String scrollElementIntoMiddle = "var viewPortHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);"
